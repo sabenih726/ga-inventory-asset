@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Manajemen Aset</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- html5-qrcode library untuk barcode scanner -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <!-- SheetJS library untuk export/import Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #555; }
+        
+        /* Style for the scanner modal */
+        #scannerModal {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        #qr-reader {
+            width: 100%;
+            max-width: 500px;
+            border: 2px solid #3b82f6;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-blue-600 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <h1 class="text-2xl md:text-3xl font-bold text-center">📦 Aplikasi Manajemen Aset</h1>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Toast Notification -->
+        <div id="toast" class="fixed top-4 right-4 z-50 hidden">
+            <div class="bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg">
+                <span id="toast-message"></span>
+            </div>
+        </div>
+
+        <!-- Form Input Aset -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-6 text-gray-800">📝 Form Input Aset</h2>
+            
+            <form id="assetForm" class="space-y-4">
+                <!-- Nomor Aset -->
+                <div>
+                    <label for="assetNumber" class="block text-sm font-medium text-gray-700 mb-2">
+                        Nomor Aset <span class="text-red-500">*</span>
+                    </label>
+                    <div class="flex rounded-md shadow-sm">
+                        <input 
+                            type="text" 
+                            id="assetNumber" 
+                            name="assetNumber" 
+                            required
+                            placeholder="Scan atau ketik manual"
+                            class="flex-1 block w-full min-w-0 px-3 py-2 rounded-none rounded-l-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm border-gray-300"
+                        >
+                        <button 
+                            type="button" 
+                            id="scanButton"
+                            class="inline-flex items-center px-3 rounded-r-md border border-l-0 border-gray-300 bg-gray-50 text-gray-500 hover:bg-gray-100"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h4.586A1 1 0 019.293 3.707l1.414 1.414a1 1 0 00.707.293h3.172a1 1 0 01.707 1.707l-1.414 1.414A1 1 0 0014.586 9H10a1 1 0 01-1-1V3.414A1 1 0 007.586 2H4a1 1 0 01-1-1zM2 11a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H3a1 1 0 01-1-1v-2zm5 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H8a1 1 0 01-1-1v-2zm5 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1h-2a1 1 0 01-1-1v-2zM3 16a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H3a1 1 0 01-1-1v-2zm5 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H8a1 1 0 01-1-1v-2zm5 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1h-2a1 1 0 01-1-1v-2z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Deskripsi Aset -->
+                <div>
+                    <label for="assetDescription" class="block text-sm font-medium text-gray-700 mb-2">
+                        Deskripsi Aset <span class="text-red-500">*</span>
+                    </label>
+                    <textarea 
+                        id="assetDescription" 
+                        name="assetDescription" 
+                        required
+                        rows="3"
+                        placeholder="Contoh: Meja Kerja Staff"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    ></textarea>
+                </div>
+
+                <!-- Lokasi Aset -->
+                <div>
+                    <label for="assetLocation" class="block text-sm font-medium text-gray-700 mb-2">
+                        Lokasi Aset <span class="text-red-500">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="assetLocation" 
+                        name="assetLocation" 
+                        required
+                        placeholder="Contoh: Ruang Meeting Lt. 5"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                </div>
+
+                <!-- Tombol Submit -->
+                <div class="flex gap-2 pt-4">
+                    <button 
+                        type="submit" 
+                        id="submitButton"
+                        class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                        ➕ Tambah Aset
+                    </button>
+                    <button 
+                        type="button" 
+                        id="cancelButton"
+                        class="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 hidden"
+                    >
+                        ❌ Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Scanner Modal -->
+        <div id="scannerModal" class="fixed inset-0 z-50 items-center justify-center hidden">
+            <div class="bg-white p-4 rounded-lg shadow-xl max-w-lg w-full m-4">
+                <h3 class="text-lg font-medium leading-6 text-gray-900 mb-2">Scan Barcode Aset</h3>
+                <p class="text-sm text-gray-500 mb-4">Arahkan kamera ke barcode. Pemindai akan otomatis mendeteksi.</p>
+                <div id="qr-reader"></div>
+                <div class="mt-4 text-right">
+                    <button type="button" id="closeScannerButton"
+                            class="inline-flex justify-center rounded-md border border-gray-300 px-4 py-2 bg-white text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50">
+                        Batal
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export/Import Buttons -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">📊 Export & Import Data</h2>
+            <div class="flex flex-wrap gap-4">
+                <button 
+                    id="exportButton"
+                    class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                    📥 Export ke Excel
+                </button>
+                <label class="px-6 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer">
+                    📤 Import Excel
+                    <input type="file" id="importButton" accept=".xlsx,.xls" class="hidden">
+                </label>
+            </div>
+        </div>
+
+        <!-- Tabel Data Aset -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-800">📋 Data Aset</h2>
+                <p class="text-sm text-gray-600 mt-1">Total: <span id="totalAssets">0</span> aset</p>
+            </div>
+            
+            <!-- Desktop Table -->
+            <div class="hidden md:block overflow-x-auto custom-scrollbar">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Aset</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Input</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="assetTableBody" class="bg-white divide-y divide-gray-200">
+                        <!-- Data akan diisi oleh JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Mobile Cards -->
+            <div id="assetCards" class="md:hidden p-4 space-y-4">
+                <!-- Cards akan diisi oleh JavaScript -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="text-center py-12">
+                <div class="text-gray-400 text-6xl mb-4">📦</div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">Belum ada data aset</h3>
+                <p class="text-gray-500">Mulai dengan menambahkan aset pertama Anda</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // VARIABEL GLOBAL DAN INISIALISASI
+        // ==========================================
+        
+        let assets = []; // Array untuk menyimpan data aset
+        let editingIndex = -1; // Index aset yang sedang diedit (-1 = tidak ada yang diedit)
+        let html5QrCode = null; // Instance scanner barcode
+
+        // Elemen DOM yang sering digunakan
+        const assetForm = document.getElementById('assetForm');
+        const assetTableBody = document.getElementById('assetTableBody');
+        const assetCards = document.getElementById('assetCards');
+        const emptyState = document.getElementById('emptyState');
+        const totalAssetsSpan = document.getElementById('totalAssets');
+        const submitButton = document.getElementById('submitButton');
+        const cancelButton = document.getElementById('cancelButton');
+        const scannerModal = document.getElementById('scannerModal');
+
+        // ==========================================
+        // FUNGSI UTILITAS
+        // ==========================================
+
+        /**
+         * Menampilkan toast notification
+         * @param {string} message - Pesan yang akan ditampilkan
+         * @param {string} type - Tipe notifikasi (success, error, info)
+         */
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            
+            // Set warna berdasarkan tipe
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500'
+            };
+            
+            toast.className = `fixed top-4 right-4 z-50 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg`;
+            toastMessage.textContent = message;
+            toast.classList.remove('hidden');
+            
+            // Sembunyikan toast setelah 3 detik
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        /**
+         * Format tanggal ke format Indonesia
+         * @param {Date} date - Objek tanggal
+         * @returns {string} Tanggal dalam format DD/MM/YYYY HH:MM
+         */
+        function formatDate(date) {
+            return new Intl.DateTimeFormat('id-ID', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }).format(date);
+        }
+
+        /**
+         * Generate ID unik untuk aset
+         * @returns {string} ID unik
+         */
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        /**
+         * Escape HTML untuk keamanan
+         * @param {string} str - String yang akan di-escape
+         * @returns {string} String yang sudah di-escape
+         */
+        function escapeHTML(str) {
+            const p = document.createElement('p');
+            p.textContent = str;
+            return p.innerHTML;
+        }
+
+        // ==========================================
+        // FUNGSI PENYIMPANAN DATA (localStorage)
+        // ==========================================
+
+        /**
+         * Menyimpan data aset ke localStorage
+         */
+        function saveToLocalStorage() {
+            try {
+                localStorage.setItem('assets', JSON.stringify(assets));
+            } catch (error) {
+                console.error('Error saving to localStorage:', error);
+                showToast('Gagal menyimpan data', 'error');
+            }
+        }
+
+        /**
+         * Memuat data aset dari localStorage
+         */
+        function loadFromLocalStorage() {
+            try {
+                const savedAssets = localStorage.getItem('assets');
+                if (savedAssets) {
+                    assets = JSON.parse(savedAssets);
+                }
+            } catch (error) {
+                console.error('Error loading from localStorage:', error);
+                assets = [];
+            }
+        }
+
+        // ==========================================
+        // FUNGSI VALIDASI
+        // ==========================================
+
+        /**
+         * Validasi form input
+         * @param {Object} formData - Data form yang akan divalidasi
+         * @returns {Object} Hasil validasi
+         */
+        function validateForm(formData) {
+            const errors = [];
+
+            // Validasi nomor aset
+            if (!formData.assetNumber.trim()) {
+                errors.push('Nomor aset harus diisi');
+            } else if (formData.assetNumber.trim().length < 3) {
+                errors.push('Nomor aset minimal 3 karakter');
+            }
+
+            // Validasi deskripsi
+            if (!formData.assetDescription.trim()) {
+                errors.push('Deskripsi aset harus diisi');
+            } else if (formData.assetDescription.trim().length < 5) {
+                errors.push('Deskripsi aset minimal 5 karakter');
+            }
+
+            // Validasi lokasi
+            if (!formData.assetLocation.trim()) {
+                errors.push('Lokasi aset harus diisi');
+            }
+
+            // Cek duplikasi nomor aset (kecuali saat edit)
+            const isDuplicate = assets.some((asset, index) => 
+                asset.assetNumber.toLowerCase() === formData.assetNumber.trim().toLowerCase() && 
+                index !== editingIndex
+            );
+
+            if (isDuplicate) {
+                errors.push('Nomor aset sudah ada');
+            }
+
+            return {
+                isValid: errors.length === 0,
+                errors: errors
+            };
+        }
+
+        // ==========================================
+        // FUNGSI CRUD ASET
+        // ==========================================
+
+        /**
+         * Menambah aset baru
+         * @param {Object} assetData - Data aset yang akan ditambahkan
+         */
+        function addAsset(assetData) {
+            const newAsset = {
+                id: generateId(),
+                assetNumber: assetData.assetNumber.trim(),
+                assetDescription: assetData.assetDescription.trim(),
+                assetLocation: assetData.assetLocation.trim(),
+                createdAt: new Date().toISOString()
+            };
+
+            assets.push(newAsset);
+            saveToLocalStorage();
+            renderAssets();
+            showToast('Aset berhasil ditambahkan');
+        }
+
+        /**
+         * Mengupdate aset yang sudah ada
+         * @param {number} index - Index aset yang akan diupdate
+         * @param {Object} assetData - Data aset yang baru
+         */
+        function updateAsset(index, assetData) {
+            assets[index] = {
+                ...assets[index],
+                assetNumber: assetData.assetNumber.trim(),
+                assetDescription: assetData.assetDescription.trim(),
+                assetLocation: assetData.assetLocation.trim(),
+                updatedAt: new Date().toISOString()
+            };
+
+            saveToLocalStorage();
+            renderAssets();
+            showToast('Aset berhasil diperbarui');
+        }
+
+        /**
+         * Menghapus aset
+         * @param {number} index - Index aset yang akan dihapus
+         */
+        function deleteAsset(index) {
+            if (confirm('Apakah Anda yakin ingin menghapus aset ini?')) {
+                const deletedAsset = assets[index];
+                assets.splice(index, 1);
+                saveToLocalStorage();
+                renderAssets();
+                showToast(`Aset "${deletedAsset.assetNumber}" berhasil dihapus`);
+            }
+        }
+
+        /**
+         * Memulai proses edit aset
+         * @param {number} index - Index aset yang akan diedit
+         */
+        function editAsset(index) {
+            const asset = assets[index];
+            editingIndex = index;
+
+            // Isi form dengan data aset yang akan diedit
+            document.getElementById('assetNumber').value = asset.assetNumber;
+            document.getElementById('assetDescription').value = asset.assetDescription;
+            document.getElementById('assetLocation').value = asset.assetLocation;
+
+            // Ubah tampilan tombol
+            submitButton.textContent = '✏️ Update Aset';
+            cancelButton.classList.remove('hidden');
+
+            // Scroll ke form
+            assetForm.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        /**
+         * Membatalkan proses edit
+         */
+        function cancelEdit() {
+            editingIndex = -1;
+            assetForm.reset();
+            submitButton.textContent = '➕ Tambah Aset';
+            cancelButton.classList.add('hidden');
+        }
+
+        // ==========================================
+        // FUNGSI RENDER UI
+        // ==========================================
+
+        /**
+         * Render tabel dan cards aset
+         */
+        function renderAssets() {
+            // Update total aset
+            totalAssetsSpan.textContent = assets.length;
+
+            // Tampilkan empty state jika tidak ada data
+            if (assets.length === 0) {
+                emptyState.classList.remove('hidden');
+                assetTableBody.innerHTML = '';
+                assetCards.innerHTML = '';
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+
+            // Render tabel desktop
+            renderDesktopTable();
+
+            // Render cards mobile
+            renderMobileCards();
+        }
+
+        /**
+         * Render tabel untuk desktop
+         */
+        function renderDesktopTable() {
+            assetTableBody.innerHTML = assets.map((asset, index) => `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${index + 1}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">${escapeHTML(asset.assetNumber)}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm text-gray-900 max-w-xs truncate" title="${escapeHTML(asset.assetDescription)}">
+                            ${escapeHTML(asset.assetDescription)}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">${escapeHTML(asset.assetLocation)}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-500">${formatDate(new Date(asset.createdAt))}</div>
+                        ${asset.updatedAt ? `<div class="text-xs text-blue-500">Diperbarui: ${formatDate(new Date(asset.updatedAt))}</div>` : ''}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button 
+                            onclick="editAsset(${index})"
+                            class="text-blue-600 hover:text-blue-900 mr-3"
+                            title="Edit aset"
+                        >
+                            ✏️ Edit
+                        </button>
+                        <button 
+                            onclick="deleteAsset(${index})"
+                            class="text-red-600 hover:text-red-900"
+                            title="Hapus aset"
+                        >
+                            🗑️ Hapus
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        /**
+         * Render cards untuk mobile
+         */
+        function renderMobileCards() {
+            assetCards.innerHTML = assets.map((asset, index) => `
+                <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-gray-900">${escapeHTML(asset.assetNumber)}</h3>
+                            <p class="text-sm text-gray-600 mt-1">${escapeHTML(asset.assetDescription)}</p>
+                        </div>
+                        <span class="text-xs text-gray-500 ml-2">#${index + 1}</span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <p class="text-sm"><span class="font-medium">📍 Lokasi:</span> ${escapeHTML(asset.assetLocation)}</p>
+                        <p class="text-xs text-gray-500 mt-1">
+                            📅 ${formatDate(new Date(asset.createdAt))}
+                            ${asset.updatedAt ? `<br>🔄 Diperbarui: ${formatDate(new Date(asset.updatedAt))}` : ''}
+                        </p>
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <button 
+                            onclick="editAsset(${index})"
+                            class="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
+                        >
+                            ✏️ Edit
+                        </button>
+                        <button 
+                            onclick="deleteAsset(${index})"
+                            class="flex-1 px-3 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700"
+                        >
+                            🗑️ Hapus
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ==========================================
+        // FUNGSI BARCODE SCANNER (IMPROVED)
+        // ==========================================
+
+        /**
+         * Setup scanner instance
+         */
+        function setupScanner() {
+            html5QrCode = new Html5Qrcode("qr-reader");
+        }
+
+        /**
+         * Callback saat berhasil scan
+         */
+        const onScanSuccess = (decodedText, decodedResult) => {
+            console.log(`Code matched = ${decodedText}`, decodedResult);
+            document.getElementById('assetNumber').value = decodedText;
+            stopScanner();
+            showToast('Barcode berhasil dipindai: ' + decodedText);
+        };
+
+        /**
+         * Callback saat gagal scan (diabaikan)
+         */
+        const onScanFailure = (error) => {
+            // Callback ini dipanggil sering, jadi kita abaikan atau log untuk debugging
+            // console.warn(`Code scan error = ${error}`);
+        };
+
+        /**
+         * Memulai scanner
+         */
+        function startScanner() {
+            scannerModal.style.display = 'flex';
+            
+            const config = { 
+                fps: 10, 
+                qrbox: { width: 250, height: 250 },
+                aspectRatio: 1.0
+            };
+            
+            // Prioritas kamera belakang untuk mobile
+            html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, onScanFailure)
+                .catch(err => {
+                    console.error("Unable to start scanning.", err);
+                    showToast("Gagal memulai kamera. Pastikan Anda memberikan izin akses kamera.", 'error');
+                    stopScanner();
+                });
+        }
+
+        /**
+         * Menghentikan scanner
+         */
+        function stopScanner() {
+            if (html5QrCode) {
+                html5QrCode.stop().then(ignore => {
+                    console.log("QR Code scanning stopped.");
+                }).catch(err => {
+                    console.error("Failed to stop QR Code scanning.", err);
+                }).finally(() => {
+                    scannerModal.style.display = 'none';
+                });
+            } else {
+                scannerModal.style.display = 'none';
+            }
+        }
+
+        // ==========================================
+        // FUNGSI EXPORT/IMPORT EXCEL
+        // ==========================================
+
+        /**
+         * Export data ke file Excel
+         */
+        function exportToExcel() {
+            if (assets.length === 0) {
+                showToast('Tidak ada data untuk diekspor', 'info');
+                return;
+            }
+
+            try {
+                // Siapkan data untuk export
+                const exportData = assets.map((asset, index) => ({
+                    'No': index + 1,
+                    'Nomor Aset': asset.assetNumber,
+                    'Deskripsi Aset': asset.assetDescription,
+                    'Lokasi Aset': asset.assetLocation,
+                    'Tanggal Input': formatDate(new Date(asset.createdAt)),
+                    'Tanggal Update': asset.updatedAt ? formatDate(new Date(asset.updatedAt)) : '-'
+                }));
+
+                // Buat workbook dan worksheet
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.json_to_sheet(exportData);
+
+                // Set lebar kolom
+                const colWidths = [
+                    { wch: 5 },  // No
+                    { wch: 15 }, // Nomor Aset
+                    { wch: 30 }, // Deskripsi Aset
+                    { wch: 20 }, // Lokasi Aset
+                    { wch: 18 }, // Tanggal Input
+                    { wch: 18 }  // Tanggal Update
+                ];
+                ws['!cols'] = colWidths;
+
+                // Tambahkan worksheet ke workbook
+                XLSX.utils.book_append_sheet(wb, ws, "Data Aset");
+
+                // Generate nama file dengan timestamp
+                const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+                const filename = `data-aset-${timestamp}.xlsx`;
+
+                // Download file
+                XLSX.writeFile(wb, filename);
+                showToast(`Data berhasil diekspor ke ${filename}`);
+            } catch (error) {
+                console.error('Error exporting to Excel:', error);
+                showToast('Gagal mengekspor data', 'error');
+            }
+        }
+
+        /**
+         * Import data dari file Excel
+         * @param {Event} event - Event dari input file
+         */
+        function importFromExcel(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    // Ambil worksheet pertama
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    // Convert ke JSON
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                    
+                    if (jsonData.length === 0) {
+                        showToast('File Excel kosong atau format tidak sesuai', 'error');
+                        return;
+                    }
+
+                    // Validasi dan konversi data
+                    const importedAssets = [];
+                    const errors = [];
+
+                    jsonData.forEach((row, index) => {
+                        const rowNum = index + 2; // +2 karena mulai dari baris 2 (header di baris 1)
+                        
+                        // Cek kolom yang diperlukan
+                        const assetNumber = row['Nomor Aset'] || row['nomor_aset'] || row['asset_number'] || '';
+                        const assetDescription = row['Deskripsi Aset'] || row['deskripsi_aset'] || row['description'] || '';
+                        const assetLocation = row['Lokasi Aset'] || row['lokasi_aset'] || row['location'] || '';
+
+                        if (!assetNumber || !assetDescription || !assetLocation) {
+                            errors.push(`Baris ${rowNum}: Data tidak lengkap`);
+                            return;
+                        }
+
+                        // Cek duplikasi dalam data yang diimpor
+                        const isDuplicate = importedAssets.some(asset => 
+                            asset.assetNumber.toLowerCase() === assetNumber.toString().toLowerCase()
+                        );
+
+                        if (isDuplicate) {
+                            errors.push(`Baris ${rowNum}: Nomor aset "${assetNumber}" duplikat dalam file`);
+                            return;
+                        }
+
+                        importedAssets.push({
+                            id: generateId(),
+                            assetNumber: assetNumber.toString().trim(),
+                            assetDescription: assetDescription.toString().trim(),
+                            assetLocation: assetLocation.toString().trim(),
+                            createdAt: new Date().toISOString()
+                        });
+                    });
+
+                    if (errors.length > 0) {
+                        alert('Terdapat error dalam file:\n' + errors.join('\n'));
+                        return;
+                    }
+
+                    if (importedAssets.length === 0) {
+                        showToast('Tidak ada data valid untuk diimpor', 'error');
+                        return;
+                    }
+
+                    // Konfirmasi import
+                    const confirmMessage = `Akan mengimpor ${importedAssets.length} aset. Data yang ada akan ditambahkan (tidak ditimpa). Lanjutkan?`;
+                    if (confirm(confirmMessage)) {
+                        // Tambahkan ke data yang sudah ada
+                        assets.push(...importedAssets);
+                        saveToLocalStorage();
+                        renderAssets();
+                        showToast(`Berhasil mengimpor ${importedAssets.length} aset`);
+                    }
+
+                } catch (error) {
+                    console.error('Error importing Excel:', error);
+                    showToast('Gagal mengimpor file. Pastikan format file benar.', 'error');
+                }
+            };
+
+            reader.readAsArrayBuffer(file);
+            
+            // Reset input file
+            event.target.value = '';
+        }
+
+        // ==========================================
+        // EVENT LISTENERS
+        // ==========================================
+
+        // Form submit handler
+        assetForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const assetData = {
+                assetNumber: formData.get('assetNumber'),
+                assetDescription: formData.get('assetDescription'),
+                assetLocation: formData.get('assetLocation')
+            };
+
+            // Validasi form
+            const validation = validateForm(assetData);
+            if (!validation.isValid) {
+                alert('Error:\n' + validation.errors.join('\n'));
+                return;
+            }
+
+            // Tambah atau update aset
+            if (editingIndex >= 0) {
+                updateAsset(editingIndex, assetData);
+                cancelEdit();
+            } else {
+                addAsset(assetData);
+                this.reset();
+            }
+        });
+
+        // Tombol cancel edit
+        cancelButton.addEventListener('click', cancelEdit);
+
+        // Tombol scan barcode
+        document.getElementById('scanButton').addEventListener('click', startScanner);
+
+        // Tombol close scanner
+        document.getElementById('closeScannerButton').addEventListener('click', stopScanner);
+
+        // Tombol export Excel
+        document.getElementById('exportButton').addEventListener('click', exportToExcel);
+
+        // Input import Excel
+        document.getElementById('importButton').addEventListener('change', importFromExcel);
+
+        // Close scanner modal saat klik di luar
+        scannerModal.addEventListener('click', function(e) {
+            if (e.target === scannerModal) {
+                stopScanner();
+            }
+        });
+
+        // ==========================================
+        // INISIALISASI APLIKASI
+        // ==========================================
+
+        // Load data saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFromLocalStorage();
+            renderAssets();
+            setupScanner(); // Setup scanner instance
+            showToast('Aplikasi siap digunakan!', 'info');
+        });
+
+        // Cleanup saat halaman ditutup
+        window.addEventListener('beforeunload', function() {
+            if (html5QrCode) {
+                html5QrCode.stop();
+            }
+        });
+    </script>
+</body>
+</html>
