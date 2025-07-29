@@ -89,12 +89,6 @@ export default function Home() {
               <h1 className="text-xl md:text-2xl font-bold text-cat-black">📦 Asset Management System</h1>
               <p className="text-cat-black/80 text-sm">Sistem Manajemen Aset Terpadu</p>
             </div>
-
-            {/* User Info */}
-            <div className="text-right">
-              <p className="text-cat-black text-sm font-medium">Welcome, User</p>
-              <p className="text-xs text-cat-black/70">Trakindo CAT</p>
-            </div>
           </div>
         </div>
       </header>
