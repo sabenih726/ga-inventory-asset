@@ -86,8 +86,8 @@ export default function Home() {
 
             {/* Title */}
             <div className="text-center flex-1">
-              <h1 className="text-xl md:text-2xl font-bold text-cat-black">📦 Asset Management System</h1>
-              <p className="text-cat-black/80 text-sm">Sistem Manajemen Aset Terpadu</p>
+              <h1 className="text-xl md:text-2xl font-bold text-cat-black">Asset Facility Support</h1>
+              <p className="text-cat-black/80 text-sm">Dikelola oleh Facility Maintenence</p>
             </div>
           </div>
         </div>
