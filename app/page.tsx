@@ -81,7 +81,7 @@ export default function Home() {
           <div className="flex items-center justify-between">
             {/* Logo Trakindo CAT */}
             <div className="flex items-center">
-              <img src="/images/trakindo-logo.png" alt="Trakindo CAT Logo" className="h-12 w-auto" />
+              <img src="/images/trakindo-logo.png" alt="Trakindo CAT Logo" className="h-9 w-auto" />
             </div>
 
             {/* Title */}
