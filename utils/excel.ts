@@ -14,7 +14,6 @@ export function exportToExcel(assets: Asset[]): void {
       "Deskripsi Aset": asset.assetDescription,
       "Lokasi Aset": asset.assetLocation,
       "Cost Center": asset.costCenter,
-      Status: getStatusLabel(asset.status),
       Kondisi: getConditionLabel(asset.condition),
       "Tanggal Input": formatDateForExcel(asset.createdAt),
       "Tanggal Update": asset.updatedAt ? formatDateForExcel(asset.updatedAt) : "-",
@@ -31,7 +30,6 @@ export function exportToExcel(assets: Asset[]): void {
       { wch: 40 }, // Deskripsi Aset
       { wch: 25 }, // Lokasi Aset
       { wch: 15 }, // Cost Center
-      { wch: 15 }, // Status
       { wch: 15 }, // Kondisi
       { wch: 20 }, // Tanggal Input
       { wch: 20 }, // Tanggal Update
@@ -154,7 +152,6 @@ export function importFromExcel(file: File): Promise<Asset[]> {
         const descriptionCol = findColumnIndex(["deskripsi", "description", "desc", "keterangan"])
         const locationCol = findColumnIndex(["lokasi", "location", "tempat"])
         const costCenterCol = findColumnIndex(["cost center", "cost_center", "costcenter", "cc"])
-        const statusCol = findColumnIndex(["status", "stat"])
         const conditionCol = findColumnIndex(["kondisi", "condition", "cond"])
 
         if (assetNumberCol === -1 || descriptionCol === -1 || locationCol === -1) {
@@ -181,8 +178,7 @@ Header yang ditemukan: ${headers.join(", ")}`),
           const assetDescription = row[descriptionCol] ? row[descriptionCol].toString().trim() : ""
           const assetLocation = row[locationCol] ? row[locationCol].toString().trim() : ""
           const costCenter = row[costCenterCol] ? row[costCenterCol].toString().trim() : ""
-          const status = row[statusCol] ? normalizeStatus(row[statusCol].toString().trim()) : "active"
-          const condition = row[conditionCol] ? normalizeCondition(row[conditionCol].toString().trim()) : "good"
+          const condition = row[conditionCol] ? normalizeCondition(row[conditionCol].toString().trim()) : "bagus"
 
           // Validasi data
           if (!assetNumber) {
@@ -222,7 +218,6 @@ Header yang ditemukan: ${headers.join(", ")}`),
             assetDescription: assetDescription,
             assetLocation: assetLocation,
             costCenter: costCenter,
-            status: status as any,
             condition: condition as any,
             createdAt: new Date().toISOString(),
           })
@@ -277,50 +272,28 @@ function generateImportId(): string {
   return Date.now().toString(36) + Math.random().toString(36).substr(2)
 }
 
-function getStatusLabel(status: string): string {
-  const statusMap: Record<string, string> = {
-    active: "Aktif",
-    inactive: "Tidak Aktif",
-    maintenance: "Maintenance",
-    disposed: "Disposed",
-  }
-  return statusMap[status] || status
-}
-
 function getConditionLabel(condition: string): string {
   const conditionMap: Record<string, string> = {
-    excellent: "Excellent",
-    good: "Good",
-    fair: "Fair",
-    poor: "Poor",
-    damaged: "Damaged",
+    bagus: "Bagus",
+    rusak: "Rusak",
+    perbaikan: "Perbaikan",
   }
   return conditionMap[condition] || condition
 }
 
-function normalizeStatus(status: string): string {
-  const statusMap: Record<string, string> = {
-    aktif: "active",
-    active: "active",
-    "tidak aktif": "inactive",
-    inactive: "inactive",
-    maintenance: "maintenance",
-    disposed: "disposed",
-  }
-  return statusMap[status.toLowerCase()] || "active"
-}
-
 function normalizeCondition(condition: string): string {
   const conditionMap: Record<string, string> = {
-    excellent: "excellent",
-    good: "good",
-    fair: "fair",
-    poor: "poor",
-    damaged: "damaged",
-    baik: "good",
-    rusak: "damaged",
+    bagus: "bagus",
+    baik: "bagus",
+    good: "bagus",
+    rusak: "rusak",
+    damaged: "rusak",
+    broken: "rusak",
+    perbaikan: "perbaikan",
+    repair: "perbaikan",
+    maintenance: "perbaikan",
   }
-  return conditionMap[condition.toLowerCase()] || "good"
+  return conditionMap[condition.toLowerCase()] || "bagus"
 }
 
 // Fungsi untuk membuat template Excel - diperbaiki untuk browser
@@ -331,24 +304,21 @@ export function downloadTemplate(): void {
       "Deskripsi Aset": "Meja Kerja Staff dengan laci 3 tingkat",
       "Lokasi Aset": "Ruang Meeting Lt. 5",
       "Cost Center": "CC-001",
-      Status: "Aktif",
-      Kondisi: "Good",
+      Kondisi: "Bagus",
     },
     {
       "Nomor Aset": "AST002",
       "Deskripsi Aset": "Kursi Kantor Ergonomis dengan roda",
       "Lokasi Aset": "Ruang Staff Lt. 3",
       "Cost Center": "HR-001",
-      Status: "Aktif",
-      Kondisi: "Excellent",
+      Kondisi: "Bagus",
     },
     {
       "Nomor Aset": "AST003",
       "Deskripsi Aset": "Laptop Dell Inspiron 15 inch",
       "Lokasi Aset": "IT Department",
       "Cost Center": "IT-001",
-      Status: "Maintenance",
-      Kondisi: "Fair",
+      Kondisi: "Perbaikan",
     },
   ]
 
@@ -361,6 +331,8 @@ export function downloadTemplate(): void {
       { wch: 20 }, // Nomor Aset
       { wch: 40 }, // Deskripsi Aset
       { wch: 25 }, // Lokasi Aset
+      { wch: 15 }, // Cost Center
+      { wch: 15 }, // Kondisi
     ]
     ws["!cols"] = colWidths
 
