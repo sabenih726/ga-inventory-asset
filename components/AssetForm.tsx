@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import type { AssetFormData, Asset } from "@/types/asset"
-import { ASSET_STATUS_OPTIONS, ASSET_CONDITION_OPTIONS } from "@/types/asset"
+import { ASSET_CONDITION_OPTIONS } from "@/types/asset"
 import BarcodeScanner from "./BarcodeScanner"
 
 interface AssetFormProps {
@@ -20,8 +20,7 @@ export default function AssetForm({ onSubmit, onCancel, initialData, isEditing =
     assetDescription: initialData?.assetDescription || "",
     assetLocation: initialData?.assetLocation || "",
     costCenter: initialData?.costCenter || "",
-    status: initialData?.status || "active",
-    condition: initialData?.condition || "good",
+    condition: initialData?.condition || "bagus",
   })
   const [isScannerOpen, setIsScannerOpen] = useState(false)
 
@@ -50,8 +49,7 @@ export default function AssetForm({ onSubmit, onCancel, initialData, isEditing =
       assetDescription: "",
       assetLocation: "",
       costCenter: "",
-      status: "active",
-      condition: "good",
+      condition: "bagus",
     })
   }
 
@@ -118,30 +116,9 @@ export default function AssetForm({ onSubmit, onCancel, initialData, isEditing =
             </div>
           </div>
 
-          {/* Row 2: Status dan Condition */}
+          {/* Row 2: Kondisi Aset */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Status */}
-            <div>
-              <label htmlFor="status" className="block text-sm font-medium text-foreground mb-2">
-                Status Aset <span className="text-destructive">*</span>
-              </label>
-              <select
-                id="status"
-                name="status"
-                value={formData.status}
-                onChange={handleInputChange}
-                required
-                className="trakindo-input w-full"
-              >
-                {ASSET_STATUS_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Condition */}
+            {/* Kondisi Aset */}
             <div>
               <label htmlFor="condition" className="block text-sm font-medium text-foreground mb-2">
                 Kondisi Aset <span className="text-destructive">*</span>
@@ -161,6 +138,9 @@ export default function AssetForm({ onSubmit, onCancel, initialData, isEditing =
                 ))}
               </select>
             </div>
+
+            {/* Empty space for layout balance */}
+            <div></div>
           </div>
 
           {/* Deskripsi Aset */}
