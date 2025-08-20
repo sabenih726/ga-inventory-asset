@@ -6,7 +6,6 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'Facility App',
   description: 'Created with Rizkiferm',
-  generator: 'v0.dev',
 }
 
 export default function RootLayout({
