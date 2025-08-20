@@ -33,11 +33,6 @@ export function validateAssetForm(
     errors.push("Cost Center minimal 3 karakter")
   }
 
-  // Validasi status
-  if (!formData.status) {
-    errors.push("Status aset harus dipilih")
-  }
-
   // Validasi condition
   if (!formData.condition) {
     errors.push("Kondisi aset harus dipilih")
