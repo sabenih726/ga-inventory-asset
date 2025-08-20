@@ -4,7 +4,6 @@ export type SortField =
   | "assetDescription"
   | "assetLocation"
   | "costCenter"
-  | "status"
   | "condition"
   | "createdAt"
   | "updatedAt"
@@ -18,7 +17,6 @@ export interface FilterConfig {
   search: string
   location: string
   costCenter: string
-  status: string
   condition: string
   dateFrom: string
   dateTo: string
@@ -37,11 +35,9 @@ export interface Asset {
   assetDescription: string
   assetLocation: string
   costCenter: string
-  status: AssetStatus
   condition: AssetCondition
   createdAt: string
   updatedAt?: string
 }
 
-export type AssetStatus = "active" | "inactive" | "maintenance" | "disposed"
-export type AssetCondition = "excellent" | "good" | "fair" | "poor" | "damaged"
+export type AssetCondition = "bagus" | "rusak" | "perbaikan"
