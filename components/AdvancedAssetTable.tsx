@@ -1,11 +1,11 @@
 "use client"
 
 import type { Asset } from "@/types/asset"
-import type { SortField } from "@/types/table"
+import type { SortField } from "@/types"
 import { useAssetTable } from "@/hooks/useAssetTable"
 import AssetTableFilters from "./AssetTableFilters"
 import ValidationPanel from "./ValidationPanel"
-import { ASSET_STATUS_OPTIONS, ASSET_CONDITION_OPTIONS } from "@/types/asset"
+import { ASSET_CONDITION_OPTIONS } from "@/types/asset"
 
 interface AdvancedAssetTableProps {
   assets: Asset[]
@@ -23,7 +23,6 @@ export default function AdvancedAssetTable({ assets, onEdit, onDelete, onBulkDel
     validationIssues,
     uniqueLocations,
     uniqueCostCenters,
-    uniqueStatuses,
     uniqueConditions,
     handleSort,
     setFilterConfig,
@@ -89,19 +88,9 @@ export default function AdvancedAssetTable({ assets, onEdit, onDelete, onBulkDel
     return hasError ? "error" : "warning"
   }
 
-  const getStatusDisplay = (status: string) => {
-    const option = ASSET_STATUS_OPTIONS.find((opt) => opt.value === status)
-    return option ? option.label : status
-  }
-
   const getConditionDisplay = (condition: string) => {
     const option = ASSET_CONDITION_OPTIONS.find((opt) => opt.value === condition)
     return option ? option.label : condition
-  }
-
-  const getStatusColor = (status: string) => {
-    const option = ASSET_STATUS_OPTIONS.find((opt) => opt.value === status)
-    return option ? option.color : "gray"
   }
 
   const getConditionColor = (condition: string) => {
@@ -111,15 +100,15 @@ export default function AdvancedAssetTable({ assets, onEdit, onDelete, onBulkDel
 
   if (assets.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-800">📋 Data Aset</h2>
-          <p className="text-sm text-gray-600 mt-1">Total: 0 aset</p>
+      <div className="trakindo-card overflow-hidden">
+        <div className="p-6 border-b border-border">
+          <h2 className="text-xl font-semibold text-foreground">📋 Data Aset</h2>
+          <p className="text-sm text-muted-foreground mt-1">Total: 0 aset</p>
         </div>
         <div className="text-center py-12">
-          <div className="text-gray-400 text-6xl mb-4">📦</div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Belum ada data aset</h3>
-          <p className="text-gray-500">Mulai dengan menambahkan aset pertama Anda</p>
+          <div className="text-muted-foreground text-6xl mb-4">📦</div>
+          <h3 className="text-lg font-medium text-foreground mb-2">Belum ada data aset</h3>
+          <p className="text-muted-foreground">Mulai dengan menambahkan aset pertama Anda</p>
         </div>
       </div>
     )
@@ -131,15 +120,15 @@ export default function AdvancedAssetTable({ assets, onEdit, onDelete, onBulkDel
       <ValidationPanel issues={validationIssues} onFixIssue={handleEdit} />
 
       {/* Table Container */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      <div className="trakindo-card overflow-hidden">
         {/* Header */}
-        <div className="p-6 border-b border-gray-200">
+        <div className="p-6 border-b border-border">
           <div className="flex justify-between items-center">
             <div>
-              <h2 className="text-xl font-semibold text-gray-800">📋 Data Aset</h2>
-              <p className="text-sm text-gray-600 mt-1">
+              <h2 className="text-xl font-semibold text-foreground">📋 Data Aset</h2>
+              <p className="text-sm text-muted-foreground mt-1">
                 Total: {assets.length} aset
-                {selectedAssets.size > 0 && <span className="text-blue-600 ml-2">({selectedAssets.size} dipilih)</span>}
+                {selectedAssets.size > 0 && <span className="text-primary ml-2">({selectedAssets.size} dipilih)</span>}
               </p>
             </div>
 
@@ -148,14 +137,11 @@ export default function AdvancedAssetTable({ assets, onEdit, onDelete, onBulkDel
               <div className="flex gap-2">
                 <button
                   onClick={handleBulkDelete}
-                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="px-4 py-2 bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 focus:outline-none focus:ring-2 focus:ring-destructive"
                 >
                   🗑️ Hapus ({selectedAssets.size})
                 </button>
-                <button
-                  onClick={clearSelection}
-                  className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
-                >
+                <button onClick={clearSelection} className="trakindo-button-secondary px-4 py-2 h-10">
                   ❌ Batal Pilih
                 </button>
               </div>
@@ -169,7 +155,6 @@ export default function AdvancedAssetTable({ assets, onEdit, onDelete, onBulkDel
           onFilterChange={setFilterConfig}
           uniqueLocations={uniqueLocations}
           uniqueCostCenters={uniqueCostCenters}
-          uniqueStatuses={uniqueStatuses}
           uniqueConditions={uniqueConditions}
           totalAssets={assets.length}
           filteredCount={processedAssets.length}
@@ -178,139 +163,137 @@ export default function AdvancedAssetTable({ assets, onEdit, onDelete, onBulkDel
         {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-muted">
               <tr>
                 <th className="px-6 py-3 text-left">
                   <input
                     type="checkbox"
                     checked={selectedAssets.size === processedAssets.length && processedAssets.length > 0}
                     onChange={toggleAllSelection}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="rounded border-border text-primary focus:ring-primary"
                   />
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Status
                 </th>
                 <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-accent"
                   onClick={() => handleSort("assetNumber")}
                 >
                   <div className="flex items-center">Nomor Aset {getSortIcon("assetNumber")}</div>
                 </th>
                 <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-accent"
                   onClick={() => handleSort("assetDescription")}
                 >
                   <div className="flex items-center">Deskripsi {getSortIcon("assetDescription")}</div>
                 </th>
                 <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-accent"
                   onClick={() => handleSort("assetLocation")}
                 >
                   <div className="flex items-center">Lokasi {getSortIcon("assetLocation")}</div>
                 </th>
                 <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-accent"
                   onClick={() => handleSort("costCenter")}
                 >
                   <div className="flex items-center">Cost Center {getSortIcon("costCenter")}</div>
                 </th>
                 <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSort("status")}
-                >
-                  <div className="flex items-center">Status {getSortIcon("status")}</div>
-                </th>
-                <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-accent"
                   onClick={() => handleSort("condition")}
                 >
                   <div className="flex items-center">Kondisi {getSortIcon("condition")}</div>
                 </th>
                 <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-accent"
                   onClick={() => handleSort("createdAt")}
                 >
                   <div className="flex items-center">Tanggal Input {getSortIcon("createdAt")}</div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Aksi
+                </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-card divide-y divide-border">
               {processedAssets.map((asset) => {
                 const validationStatus = getValidationStatus(asset.id)
                 return (
-                  <tr key={asset.id} className={`hover:bg-gray-50 ${selectedAssets.has(asset.id) ? "bg-blue-50" : ""}`}>
+                  <tr
+                    key={asset.id}
+                    className={`hover:bg-muted/50 ${selectedAssets.has(asset.id) ? "bg-primary/10" : ""}`}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <input
                         type="checkbox"
                         checked={selectedAssets.has(asset.id)}
                         onChange={() => toggleAssetSelection(asset.id)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="rounded border-border text-primary focus:ring-primary"
                       />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {validationStatus === "error" && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-destructive/10 text-destructive">
                           ❌ Error
                         </span>
                       )}
                       {validationStatus === "warning" && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-chart-4/10 text-chart-4">
                           ⚠️ Warning
                         </span>
                       )}
                       {!validationStatus && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-chart-1/10 text-chart-1">
                           ✅ Valid
                         </span>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{asset.assetNumber}</div>
+                      <div className="text-sm font-medium text-foreground">{asset.assetNumber}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900 max-w-xs truncate" title={asset.assetDescription}>
+                      <div className="text-sm text-foreground max-w-xs truncate" title={asset.assetDescription}>
                         {asset.assetDescription}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{asset.assetLocation}</div>
+                      <div className="text-sm text-foreground">{asset.assetLocation}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{asset.costCenter}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${getStatusColor(asset.status)}-100 text-${getStatusColor(asset.status)}-800`}
-                      >
-                        {getStatusDisplay(asset.status)}
-                      </span>
+                      <div className="text-sm text-foreground">{asset.costCenter}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${getConditionColor(asset.condition)}-100 text-${getConditionColor(asset.condition)}-800`}
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          getConditionColor(asset.condition) === "green"
+                            ? "bg-chart-1/10 text-chart-1"
+                            : getConditionColor(asset.condition) === "red"
+                              ? "bg-destructive/10 text-destructive"
+                              : "bg-chart-4/10 text-chart-4"
+                        }`}
                       >
                         {getConditionDisplay(asset.condition)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">{formatDate(asset.createdAt)}</div>
+                      <div className="text-sm text-muted-foreground">{formatDate(asset.createdAt)}</div>
                       {asset.updatedAt && (
-                        <div className="text-xs text-blue-500">Diperbarui: {formatDate(asset.updatedAt)}</div>
+                        <div className="text-xs text-primary">Diperbarui: {formatDate(asset.updatedAt)}</div>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <button
                         onClick={() => handleEdit(asset.id)}
-                        className="text-blue-600 hover:text-blue-900 mr-3"
+                        className="text-primary hover:text-primary/80 mr-3"
                         title="Edit aset"
                       >
                         ✏️ Edit
                       </button>
                       <button
                         onClick={() => handleDelete(asset.id)}
-                        className="text-red-600 hover:text-red-900"
+                        className="text-destructive hover:text-destructive/80"
                         title="Hapus aset"
                       >
                         🗑️ Hapus
@@ -326,22 +309,21 @@ export default function AdvancedAssetTable({ assets, onEdit, onDelete, onBulkDel
         {/* Empty State for Filtered Results */}
         {processedAssets.length === 0 && assets.length > 0 && (
           <div className="text-center py-12">
-            <div className="text-gray-400 text-4xl mb-4">🔍</div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Tidak ada hasil yang ditemukan</h3>
-            <p className="text-gray-500">Coba ubah filter atau kata kunci pencarian</p>
+            <div className="text-muted-foreground text-4xl mb-4">🔍</div>
+            <h3 className="text-lg font-medium text-foreground mb-2">Tidak ada hasil yang ditemukan</h3>
+            <p className="text-muted-foreground">Coba ubah filter atau kata kunci pencarian</p>
             <button
               onClick={() =>
                 setFilterConfig({
                   search: "",
                   location: "",
                   costCenter: "",
-                  status: "",
                   condition: "",
                   dateFrom: "",
                   dateTo: "",
                 })
               }
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              className="mt-4 trakindo-button-primary px-4 py-2 h-10"
             >
               Reset Filter
             </button>
