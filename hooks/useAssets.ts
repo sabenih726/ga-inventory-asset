@@ -30,7 +30,6 @@ export function useAssets() {
         assetDescription: assetData.assetDescription.trim(),
         assetLocation: assetData.assetLocation.trim(),
         costCenter: assetData.costCenter.trim(),
-        status: assetData.status,
         condition: assetData.condition,
         createdAt: new Date().toISOString(),
       }
@@ -62,7 +61,6 @@ export function useAssets() {
                 assetDescription: assetData.assetDescription.trim(),
                 assetLocation: assetData.assetLocation.trim(),
                 costCenter: assetData.costCenter.trim(),
-                status: assetData.status,
                 condition: assetData.condition,
                 updatedAt: new Date().toISOString(),
               }
