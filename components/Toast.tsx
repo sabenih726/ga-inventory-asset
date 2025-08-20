@@ -30,7 +30,7 @@ export default function Toast({ toast, onClose }: ToastProps) {
   const icon = {
     success: "✅",
     error: "❌",
-    info: "ℹ️",
+    info: "ℹ���",
   }[toast.type]
 
   return (
