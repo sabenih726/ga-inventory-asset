@@ -1,13 +1,12 @@
 "use client"
-import type { FilterConfig } from "@/types/table"
-import { ASSET_STATUS_OPTIONS, ASSET_CONDITION_OPTIONS } from "@/types/asset"
+import type { FilterConfig } from "@/types"
+import { ASSET_CONDITION_OPTIONS } from "@/types/asset"
 
 interface AssetTableFiltersProps {
   filterConfig: FilterConfig
   onFilterChange: (config: FilterConfig) => void
   uniqueLocations: string[]
   uniqueCostCenters: string[]
-  uniqueStatuses: string[]
   uniqueConditions: string[]
   totalAssets: number
   filteredCount: number
@@ -18,7 +17,6 @@ export default function AssetTableFilters({
   onFilterChange,
   uniqueLocations,
   uniqueCostCenters,
-  uniqueStatuses,
   uniqueConditions,
   totalAssets,
   filteredCount,
@@ -35,7 +33,6 @@ export default function AssetTableFilters({
       search: "",
       location: "",
       costCenter: "",
-      status: "",
       condition: "",
       dateFrom: "",
       dateTo: "",
@@ -97,26 +94,6 @@ export default function AssetTableFilters({
             {uniqueCostCenters.map((costCenter) => (
               <option key={costCenter} value={costCenter}>
                 {costCenter}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Status Filter */}
-        <div className="w-full lg:w-40">
-          <label htmlFor="status" className="block text-sm font-medium text-foreground mb-1">
-            📊 Status
-          </label>
-          <select
-            id="status"
-            value={filterConfig.status}
-            onChange={(e) => handleFilterChange("status", e.target.value)}
-            className="trakindo-input w-full"
-          >
-            <option value="">Semua Status</option>
-            {ASSET_STATUS_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
               </option>
             ))}
           </select>
