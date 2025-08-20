@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import type { Asset, SortConfig, FilterConfig, SortField, ValidationIssue } from "@/types" // Assuming these types are declared in a separate file
+import type { Asset, SortConfig, FilterConfig, SortField, ValidationIssue } from "@/types"
 
 export function useAssetTable(assets: Asset[]) {
   const [sortConfig, setSortConfig] = useState<SortConfig>({ field: "createdAt", direction: "desc" })
@@ -9,7 +9,6 @@ export function useAssetTable(assets: Asset[]) {
     search: "",
     location: "",
     costCenter: "",
-    status: "",
     condition: "",
     dateFrom: "",
     dateTo: "",
@@ -59,11 +58,6 @@ export function useAssetTable(assets: Asset[]) {
         asset.costCenter &&
         !asset.costCenter.toLowerCase().includes(filterConfig.costCenter.toLowerCase())
       ) {
-        return false
-      }
-
-      // Status filter
-      if (filterConfig.status && asset.status !== filterConfig.status) {
         return false
       }
 
@@ -170,22 +164,22 @@ export function useAssetTable(assets: Asset[]) {
         })
       }
 
-      // Check for inactive assets with good condition
-      if (asset.status === "inactive" && (asset.condition === "excellent" || asset.condition === "good")) {
+      // Check for assets in repair condition
+      if (asset.condition === "perbaikan") {
         issues.push({
           id: asset.id,
           assetNumber: asset.assetNumber,
-          issue: "Aset tidak aktif tapi kondisi masih baik",
+          issue: "Aset sedang dalam perbaikan",
           severity: "warning",
         })
       }
 
-      // Check for active assets with poor condition
-      if (asset.status === "active" && (asset.condition === "poor" || asset.condition === "damaged")) {
+      // Check for damaged assets
+      if (asset.condition === "rusak") {
         issues.push({
           id: asset.id,
           assetNumber: asset.assetNumber,
-          issue: "Aset aktif dengan kondisi buruk perlu perhatian",
+          issue: "Aset dalam kondisi rusak perlu perhatian",
           severity: "error",
         })
       }
@@ -248,13 +242,6 @@ export function useAssetTable(assets: Asset[]) {
     return Array.from(new Set(costCenters)).sort()
   }, [safeAssets])
 
-  // Get unique statuses for filter dropdown
-  const uniqueStatuses = useMemo(() => {
-    if (!safeAssets || safeAssets.length === 0) return []
-    const statuses = safeAssets.filter((asset) => asset && asset.status).map((asset) => asset.status)
-    return Array.from(new Set(statuses)).sort()
-  }, [safeAssets])
-
   // Get unique conditions for filter dropdown
   const uniqueConditions = useMemo(() => {
     if (!safeAssets || safeAssets.length === 0) return []
@@ -270,7 +257,6 @@ export function useAssetTable(assets: Asset[]) {
     validationIssues,
     uniqueLocations,
     uniqueCostCenters,
-    uniqueStatuses,
     uniqueConditions,
     handleSort,
     setFilterConfig,
